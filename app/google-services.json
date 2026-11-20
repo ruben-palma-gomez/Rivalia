@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "609259115547",
+    "project_id": "fir-2rubenpalma2627",
+    "storage_bucket": "fir-2rubenpalma2627.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:609259115547:android:17867fa6e7eddde1e1d4be",
+        "android_client_info": {
+          "package_name": "com.example.firebase2rubenpalma2627"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "609259115547-qmif18lo5sb9bs46m4mb9mu7c1tet6jr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmAIG72fNqcM4R7oZWcEIMbSJDHWP9x4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "609259115547-qmif18lo5sb9bs46m4mb9mu7c1tet6jr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:609259115547:android:fc7205d527b9447ce1d4be",
+        "android_client_info": {
+          "package_name": "com.example.rivalia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "609259115547-qmif18lo5sb9bs46m4mb9mu7c1tet6jr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmAIG72fNqcM4R7oZWcEIMbSJDHWP9x4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "609259115547-qmif18lo5sb9bs46m4mb9mu7c1tet6jr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

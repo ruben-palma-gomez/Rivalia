@@ -1,0 +1,97 @@
+rules_version = '2';
+
+// Reglas de seguridad de Cloud Firestore para Rivalia.
+// Solo los miembros de un grupo pueden ver y modificar sus partidas, ranking y torneos.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function crewData(crewId) {
+      return get(/databases/$(database)/documents/crews/$(crewId)).data;
+    }
+
+    function isMember(crewId) {
+      return signedIn() && request.auth.uid in crewData(crewId).memberIds;
+    }
+
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.alias is string
+        && request.resource.data.alias.size() >= 3
+        && request.resource.data.alias.size() <= 20;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /crews/{crewId} {
+      allow get: if signedIn();
+      // Listar: solo mis grupos, o buscar uno concreto por código (limit 1)
+      allow list: if signedIn()
+        && (request.auth.uid in resource.data.memberIds || request.query.limit <= 1);
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid]
+        && request.resource.data.season == 1
+        && request.resource.data.code is string
+        && request.resource.data.code.size() == 6;
+
+      allow update: if signedIn() && (
+        // Unirse con el código: solo puedo añadirme a mí mismo
+        (!(request.auth.uid in resource.data.memberIds)
+          && changedOnly(['memberIds', 'members'])
+          && request.resource.data.memberIds.hasAll(resource.data.memberIds)
+          && request.auth.uid in request.resource.data.memberIds
+          && request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]))
+        ||
+        // Salir del grupo: solo puedo quitarme a mí mismo
+        (request.auth.uid in resource.data.memberIds
+          && changedOnly(['memberIds', 'members'])
+          && !(request.auth.uid in request.resource.data.memberIds)
+          && resource.data.memberIds.hasAll(request.resource.data.memberIds)
+          && request.resource.data.memberIds.size() == resource.data.memberIds.size() - 1)
+        ||
+        // Cambiar mi alias dentro del grupo
+        (request.auth.uid in resource.data.memberIds
+          && changedOnly(['members'])
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]))
+        ||
+        // El creador puede renombrar el grupo y cerrar la temporada
+        (resource.data.ownerId == request.auth.uid
+          && changedOnly(['name', 'season'])
+          && request.resource.data.season >= resource.data.season)
+      );
+
+      match /matches/{matchId} {
+        allow read: if isMember(crewId);
+        allow create: if isMember(crewId) && request.resource.data.createdBy == request.auth.uid;
+        allow update, delete: if false; // el historial no se modifica
+      }
+
+      match /ratings/{ratingId} {
+        allow read, write: if isMember(crewId);
+      }
+
+      match /tournaments/{tournamentId} {
+        allow read: if isMember(crewId);
+        allow create: if isMember(crewId) && request.resource.data.createdBy == request.auth.uid;
+        allow update: if isMember(crewId);
+        allow delete: if isMember(crewId) && resource.data.createdBy == request.auth.uid;
+      }
+
+      match /trophies/{trophyId} {
+        allow read: if isMember(crewId);
+        allow create: if isMember(crewId);
+        allow update, delete: if false;
+      }
+    }
+  }
+}
